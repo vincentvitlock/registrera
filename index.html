@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Söderslätt Schacksällskap – Närvaro</title>
+  <style>
+    :root {
+      --blue: #1F3864;
+      --accent: #2E75B6;
+      --green: #548235;
+      --bg: #f4f6fb;
+      --white: #fff;
+      --border: #d0d8e8;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --red: #c0392b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    header {
+      background: var(--blue);
+      color: white;
+      padding: 20px 20px 16px;
+      text-align: center;
+    }
+    header h1 { font-size: 20px; letter-spacing: 0.3px; }
+    header p  { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+
+    .card {
+      background: var(--white);
+      border-radius: 14px;
+      margin: 16px auto;
+      max-width: 540px;
+      padding: 20px 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    label span.req { color: var(--red); margin-left: 2px; }
+
+    select, input[type="date"], input[type="text"], input[type="tel"] {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      margin-bottom: 16px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(46,117,182,0.15);
+    }
+
+    /* Persons list */
+    #persons-list { margin-bottom: 12px; }
+
+    .person-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .person-row .person-num {
+      width: 28px; min-width: 28px; height: 28px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .person-row input {
+      flex: 1;
+      margin-bottom: 0;
+      padding: 11px 12px;
+      font-size: 15px;
+    }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      color: #bbb;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .btn-remove:hover { color: var(--red); }
+
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 2px dashed var(--accent);
+      border-radius: 10px;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background 0.15s;
+    }
+    .btn-add:hover { background: rgba(46,117,182,0.07); }
+
+    .person-count {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 17px;
+      background: var(--green);
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover  { background: #3d6b27; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Success screen */
+    #success-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 400px;
+      margin: 40px auto;
+    }
+    .checkmark {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    #success-screen h2 { font-size: 24px; color: var(--green); margin-bottom: 10px; }
+    #success-screen p  { font-size: 16px; color: var(--muted); line-height: 1.6; }
+    .btn-new {
+      margin-top: 24px;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Error */
+    .error-msg {
+      background: #fde8e8;
+      border: 1.5px solid #f5b0b0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--red);
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    /* Tid – snabbknappar */
+    .tid-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .tid-btn {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex: 1;
+      min-width: 70px;
+      text-align: center;
+    }
+    .tid-btn:hover   { border-color: var(--accent); color: var(--accent); background: rgba(46,117,182,0.06); }
+    .tid-btn.active  { background: var(--accent); color: white; border-color: var(--accent); }
+
+    #tid-custom {
+      margin-bottom: 0;
+    }
+    .tid-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -10px;
+      margin-bottom: 16px;
+    }
+
+    /* Annan plats – mer framträdande */
+    #annan-plats-wrap {
+      background: #f0f5ff;
+      border: 1.5px solid #b3c9f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    #annan-plats-wrap label { font-size: 13px; color: var(--accent); margin-bottom: 6px; }
+    #annan-plats-wrap input { margin-bottom: 0; }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>♟ Söderslätt Schacksällskap</h1>
+  <p>Registrera deltagare vid träff</p>
+</header>
+
+<div id="main-form">
+
+  <!-- Plats & datum -->
+  <div class="card">
+    <div class="section-title">📍 Var och när?</div>
+
+    <label for="plats">Plats <span class="req">*</span></label>
+    <select id="plats" required>
+      <option value="">– Välj plats –</option>
+      <optgroup label="Bibliotek &amp; media">
+        <option>Stadsbiblioteket</option>
+        <option>Mediateket</option>
+      </optgroup>
+      <optgroup label="Skolor &amp; utbildning">
+        <option>Lilje skolan</option>
+        <option>Komvux / Söderslätts gymnasium</option>
+      </optgroup>
+      <optgroup label="Fritid &amp; ungdom">
+        <option>ACCA (eftermiddag)</option>
+        <option>ACCA (kväll)</option>
+        <option>Backafall</option>
+        <option>Bastionen</option>
+        <option>Ungdomens Hus</option>
+      </optgroup>
+      <optgroup label="Tävlingsplatser">
+        <option>Pile-Valden</option>
+        <option>Axel Ebbe</option>
+      </optgroup>
+      <optgroup label="Utomhus &amp; mobilt">
+        <option>Parken / Folkets park (lådcykel)</option>
+        <option>Vattentornet</option>
+        <option>Packe (sommarläger)</option>
+      </optgroup>
+      <option value="Annan plats">Annan plats…</option>
+    </select>
+
+    <div id="annan-plats-wrap" style="display:none">
+      <label for="annan-plats-text">✏️ Skriv in platsen</label>
+      <input type="text" id="annan-plats-text" placeholder="T.ex. Fritidsgård Dalbo" autocapitalize="words" />
+    </div>
+
+    <label for="datum">Datum <span class="req">*</span></label>
+    <input type="date" id="datum" required />
+
+    <label>Tid</label>
+    <div class="tid-buttons">
+      <button type="button" class="tid-btn" onclick="setTid(this, '09–12')">09–12</button>
+      <button type="button" class="tid-btn" onclick="setTid(this, '11–13')">11–13</button>
+      <button type="button" class="tid-btn" onclick="setTid(this, '13–17')">13–17</button>
+      <button type="button" class="tid-btn" onclick="setTid(this, '17–19')">17–19</button>
+      <button type="button" class="tid-btn" onclick="setTid(this, '18–21')">18–21</button>
+    </div>
+    <input type="text" id="tid-custom" placeholder="Eller skriv t.ex. 10-12 eller 14:00-16:30" />
+    <p class="tid-hint">Välj en knapp eller skriv in tiden manuellt</p>
+  </div>
+
+  <!-- Deltagare -->
+  <div class="card">
+    <div class="section-title">👥 Deltagare</div>
+    <p class="person-count" id="person-count">0 person tillagd</p>
+    <div id="persons-list"></div>
+    <button type="button" class="btn-add" onclick="addPerson()">＋ Lägg till person</button>
+  </div>
+
+  <!-- Kommentar -->
+  <div class="card">
+    <div class="section-title">💬 Övrigt (valfritt)</div>
+    <label for="kommentar">Kommentar eller notering</label>
+    <input type="text" id="kommentar" placeholder="T.ex. 'Ny elev' eller 'Bra träff'" />
+  </div>
+
+  <!-- Submit -->
+  <div class="card">
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-submit" id="submit-btn" onclick="submitForm()">
+      ✅ Skicka in närvaro
+    </button>
+  </div>
+
+</div>
+
+<!-- Success -->
+<div id="success-screen">
+  <div class="checkmark">✅</div>
+  <h2>Skickat!</h2>
+  <p id="success-text">Närvaron är registrerad och skickad till Vincent.</p>
+  <button class="btn-new" onclick="resetForm()">Registrera ny träff</button>
+</div>
+
+
+<script>
+  // ============================================================
+  // KONFIGURATION – byt ut mot din Apps Script-URL efter deploy
+  // ============================================================
+  const APPS_SCRIPT_URL = "DIN_APPS_SCRIPT_URL_HÄR";
+  // ============================================================
+
+  let personCount = 0;
+
+  // Sätt dagens datum som standard
+  const dateInput = document.getElementById("datum");
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm   = String(today.getMonth() + 1).padStart(2, "0");
+  const dd   = String(today.getDate()).padStart(2, "0");
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+  // Visa/dölj "Annan plats"-fält
+  document.getElementById("plats").addEventListener("change", function () {
+    document.getElementById("annan-plats-wrap").style.display =
+      this.value === "Annan plats" ? "block" : "none";
+  });
+
+  // Tidsknappar
+  let activeTidBtn = null;
+  function setTid(btn, value) {
+    if (activeTidBtn) activeTidBtn.classList.remove("active");
+    if (activeTidBtn === btn) {
+      // Klick igen → avmarkera
+      activeTidBtn = null;
+      document.getElementById("tid-custom").value = "";
+      return;
+    }
+    btn.classList.add("active");
+    activeTidBtn = btn;
+    document.getElementById("tid-custom").value = value;
+  }
+
+  // Om man skriver manuellt → avmarkera knapp
+  document.getElementById("tid-custom").addEventListener("input", function () {
+    const typed = this.value.trim();
+    // Kontrollera om texten matchar en knapp
+    document.querySelectorAll(".tid-btn").forEach(b => {
+      if (b.textContent.trim() === typed) {
+        if (activeTidBtn) activeTidBtn.classList.remove("active");
+        b.classList.add("active");
+        activeTidBtn = b;
+      } else if (activeTidBtn === b && b.textContent.trim() !== typed) {
+        b.classList.remove("active");
+        activeTidBtn = null;
+      }
+    });
+  });
+
+  function addPerson() {
+    personCount++;
+    const list = document.getElementById("persons-list");
+    const row  = document.createElement("div");
+    row.className = "person-row";
+    row.id = `person-${personCount}`;
+    row.innerHTML = `
+      <div class="person-num">${personCount}</div>
+      <input type="text"
+             id="namn-${personCount}"
+             placeholder="För- och efternamn"
+             autocomplete="off"
+             autocapitalize="words" />
+      <button class="btn-remove" onclick="removePerson(${personCount})" title="Ta bort">×</button>
+    `;
+    list.appendChild(row);
+    document.getElementById(`namn-${personCount}`).focus();
+    updateCount();
+  }
+
+  function removePerson(id) {
+    const row = document.getElementById(`person-${id}`);
+    if (row) row.remove();
+    updateCount();
+  }
+
+  function updateCount() {
+    const rows  = document.querySelectorAll(".person-row");
+    const count = rows.length;
+    // Re-number
+    rows.forEach((row, i) => {
+      const numEl = row.querySelector(".person-num");
+      if (numEl) numEl.textContent = i + 1;
+    });
+    const el = document.getElementById("person-count");
+    if (count === 0)     el.textContent = "Ingen tillagd ännu";
+    else if (count === 1) el.textContent = "1 person tillagd";
+    else                  el.textContent = `${count} personer tillagda`;
+  }
+
+  function getPersons() {
+    return Array.from(document.querySelectorAll(".person-row"))
+      .map(row => {
+        const input = row.querySelector("input[type='text']");
+        return input ? input.value.trim() : "";
+      })
+      .filter(name => name.length > 0);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("error-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function hideError() {
+    document.getElementById("error-msg").style.display = "none";
+  }
+
+  function submitForm() {
+    hideError();
+
+    // Validering
+    let plats = document.getElementById("plats").value;
+    if (!plats) { showError("Välj en plats innan du skickar."); return; }
+    if (plats === "Annan plats") {
+      plats = document.getElementById("annan-plats-text").value.trim();
+      if (!plats) { showError("Ange platsnamn under 'Annan plats'."); return; }
+    }
+
+    const datum    = document.getElementById("datum").value;
+    if (!datum) { showError("Välj ett datum."); return; }
+
+    const persons  = getPersons();
+    if (persons.length === 0) {
+      showError("Lägg till minst en person innan du skickar.");
+      return;
+    }
+
+    const tid = document.getElementById("tid-custom").value.trim();
+
+    // Bygg payload
+    const payload = {
+      plats,
+      datum,
+      tid,
+      persons,
+      kommentar: document.getElementById("kommentar").value.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    // Skicka
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Skickar…';
+
+    fetch(APPS_SCRIPT_URL, {
+      method:  "POST",
+      mode:    "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(payload)
+    })
+    .then(() => {
+      // no-cors ger ingen response-body, men om det inte kastade fel → ok
+      showSuccess(plats, datum, tid, persons.length);
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '✅ Skicka in närvaro';
+      showError("Något gick fel. Kontrollera internetanslutningen och försök igen.");
+      console.error(err);
+    });
+  }
+
+  function showSuccess(plats, datum, tid, antal) {
+    document.getElementById("main-form").style.display = "none";
+    const s = document.getElementById("success-screen");
+    s.style.display = "block";
+    const tidText = tid ? ` kl. ${tid}` : "";
+    document.getElementById("success-text").innerHTML =
+      `<strong>${antal} person${antal > 1 ? "er" : ""}</strong> registrerade vid<br>
+       <strong>${plats}</strong><br>
+       den <strong>${datum}${tidText}</strong>.<br><br>
+       Mejl skickat till Vincent.`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetForm() {
+    document.getElementById("main-form").style.display = "block";
+    document.getElementById("success-screen").style.display = "none";
+    document.getElementById("plats").value = "";
+    document.getElementById("annan-plats-wrap").style.display = "none";
+    document.getElementById("annan-plats-text").value = "";
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById("persons-list").innerHTML = "";
+    document.getElementById("tid-custom").value = "";
+    document.querySelectorAll(".tid-btn").forEach(b => b.classList.remove("active"));
+    activeTidBtn = null;
+    document.getElementById("kommentar").value = "";
+    personCount = 0;
+    updateCount();
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = false;
+    btn.innerHTML = '✅ Skicka in närvaro';
+    hideError();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Starta med en person-rad
+  addPerson();
+</script>
+</body>
+</html>
