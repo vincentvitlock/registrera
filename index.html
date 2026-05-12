@@ -85,13 +85,21 @@
     #persons-list { margin-bottom: 12px; }
 
     .person-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
+      background: #f8fafd;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
       animation: fadeIn 0.2s ease;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .person-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
 
     .person-row .person-num {
       width: 28px; min-width: 28px; height: 28px;
@@ -104,12 +112,30 @@
       flex-shrink: 0;
     }
 
-    .person-row input {
-      flex: 1;
-      margin-bottom: 0;
+    .person-row input[data-field="namn"] {
+      width: 100%;
+      margin-bottom: 8px;
       padding: 11px 12px;
       font-size: 15px;
     }
+
+    .person-extra {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .person-extra input {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 13px;
+      border-color: #dde6f2;
+      color: var(--text);
+      margin-bottom: 0;
+      background: white;
+    }
+
+    .person-extra input::placeholder { color: #aab; }
 
     .btn-remove {
       background: none;
@@ -361,7 +387,7 @@
   // ============================================================
   // KONFIGURATION – byt ut mot din Apps Script-URL efter deploy
   // ============================================================
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyF1HvGm8hup6pJyk4rJPBnxIbezEQqHzdDVn3HB6iKxL8fFC5VWnjgB8bg0Nd63DoN/exec";
+  const APPS_SCRIPT_URL = "DIN_APPS_SCRIPT_URL_HÄR";
   // ============================================================
 
   let personCount = 0;
@@ -417,14 +443,33 @@
     const row  = document.createElement("div");
     row.className = "person-row";
     row.id = `person-${personCount}`;
+    row.dataset.id = personCount;
     row.innerHTML = `
-      <div class="person-num">${personCount}</div>
+      <div class="person-header">
+        <div class="person-num">${personCount}</div>
+        <button class="btn-remove" onclick="removePerson(${personCount})" title="Ta bort">×</button>
+      </div>
       <input type="text"
              id="namn-${personCount}"
-             placeholder="För- och efternamn"
+             data-field="namn"
+             placeholder="För- och efternamn *"
              autocomplete="off"
              autocapitalize="words" />
-      <button class="btn-remove" onclick="removePerson(${personCount})" title="Ta bort">×</button>
+      <div class="person-extra">
+        <input type="text"
+               data-field="personnr"
+               placeholder="Personnummer (valfritt, t.ex. 20100301-1234)"
+               autocomplete="off" />
+        <input type="tel"
+               data-field="telefon"
+               placeholder="Telefonnummer (valfritt)"
+               autocomplete="off" />
+        <input type="text"
+               data-field="info"
+               placeholder="Övrig info (valfritt)"
+               autocomplete="off"
+               autocapitalize="sentences" />
+      </div>
     `;
     list.appendChild(row);
     document.getElementById(`namn-${personCount}`).focus();
@@ -454,10 +499,13 @@
   function getPersons() {
     return Array.from(document.querySelectorAll(".person-row"))
       .map(row => {
-        const input = row.querySelector("input[type='text']");
-        return input ? input.value.trim() : "";
+        const namn     = (row.querySelector("[data-field='namn']")?.value    || "").trim();
+        const personnr = (row.querySelector("[data-field='personnr']")?.value || "").trim();
+        const telefon  = (row.querySelector("[data-field='telefon']")?.value  || "").trim();
+        const info     = (row.querySelector("[data-field='info']")?.value     || "").trim();
+        return { namn, personnr, telefon, info };
       })
-      .filter(name => name.length > 0);
+      .filter(p => p.namn.length > 0);
   }
 
   function showError(msg) {
